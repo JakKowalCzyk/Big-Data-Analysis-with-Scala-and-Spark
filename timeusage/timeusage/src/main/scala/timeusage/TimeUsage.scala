@@ -44,7 +44,7 @@ object TimeUsage extends TimeUsageInterface {
     * @param line Raw fields
     */
   def row(line: List[String]): Row =
-    Row(line.head :: line.tail.map(_.toDouble))
+    Row(line.head.toString :: line.tail.map(_.toDouble):_*)
 
   /** @return The initial data frame columns partitioned in three groups: primary needs (sleeping, eating, etc.),
     *         work and other (leisure activities)
@@ -64,9 +64,11 @@ object TimeUsage extends TimeUsageInterface {
     columnNames.filter(n => n.matches(regex)).map(n => col(n))
 
   def classifiedColumns(columnNames: List[String]): (List[Column], List[Column], List[Column]) = {
-    (getColumns(columnNames, "(t01|t03|t11|t1801|t1803).*"),
-      getColumns(columnNames, "(t05|t1803).*"),
-      getColumns(columnNames, "(t02|t04|t06|t07|t08|t09|t10|t11|t12|t13|t14|t15|t16|t18).*")
+    val primaryNeeds = getColumns(columnNames, "(t01|t03|t11|t1801|t1803).*")
+    val working = getColumns(columnNames, "(t05|t1805).*")
+    (primaryNeeds, working,
+      getColumns(columnNames.filter(name => !primaryNeeds.contains(col(name)) && !working.contains(col(name))),
+        "(t02|t04|t06|t07|t08|t09|t10|t11|t12|t13|t14|t15|t16|t18).*")
     )
   }
 
